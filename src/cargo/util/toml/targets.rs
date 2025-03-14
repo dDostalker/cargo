@@ -1089,7 +1089,7 @@ pub fn normalize_multiple_build(
     build: Option<&VecStringOrStringOrBool>,
     _package_root: &Path,
 ) -> Option<VecStringOrStringOrBool> {
-    const BUILD_RS: &str = "build.rs";
+    // const BUILD_RS: &str = "build.rs";
     match build {
         None => {
             // If there is a `build.rs` file next to the `Cargo.toml`, assume it is

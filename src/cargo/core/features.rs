@@ -521,7 +521,7 @@ features! {
     (unstable, path_bases, "", "reference/unstable.html#path-bases"),
 
     /// Allow multiple build-scripts
-    (unstable, multiple_build, "", "reference/unstable.html#wrappers-build"),
+    (unstable, multiple_build, "", "reference/unstable.html#multiple_build"),
 }
 
 /// Status and metadata for a single unstable feature.

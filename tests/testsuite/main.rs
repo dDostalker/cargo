@@ -126,6 +126,7 @@ mod messages;
 mod metabuild;
 mod metadata;
 mod minimal_versions;
+mod multiple_build;
 mod multitarget;
 mod net_config;
 mod new;
