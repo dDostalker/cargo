@@ -750,7 +750,7 @@ fn normalize_package_toml<'a>(
         version,
         authors,
         build,
-        multiple_build: multiple_build,
+        multiple_build,
         metabuild,
         default_target,
         forced_target,
