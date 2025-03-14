@@ -519,6 +519,9 @@ features! {
 
     /// Allow paths that resolve relatively to a base specified in the config.
     (unstable, path_bases, "", "reference/unstable.html#path-bases"),
+
+    /// Allow multiple build-scripts
+    (unstable, multiple_build, "", "reference/unstable.html#wrappers-build"),
 }
 
 /// Status and metadata for a single unstable feature.

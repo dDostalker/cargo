@@ -18,7 +18,7 @@ use anyhow::Context as _;
 use cargo_util::paths;
 use cargo_util_schemas::manifest::{
     PathValue, StringOrBool, StringOrVec, TomlBenchTarget, TomlBinTarget, TomlExampleTarget,
-    TomlLibTarget, TomlManifest, TomlTarget, TomlTestTarget,
+    TomlLibTarget, TomlManifest, TomlTarget, TomlTestTarget, VecStringOrStringOrBool,
 };
 
 use crate::core::compiler::rustdoc::RustdocScrapeExamples;
@@ -1063,6 +1063,50 @@ pub fn normalize_build(build: Option<&StringOrBool>, package_root: &Path) -> Opt
             Some(StringOrBool::String(build))
         }
         Some(StringOrBool::Bool(true)) => Some(StringOrBool::String(BUILD_RS.to_owned())),
+    }
+}
+#[tracing::instrument(skip_all)]
+pub fn normalize_multiple_build(
+    build: Option<&VecStringOrStringOrBool>,
+    _package_root: &Path,
+) -> Option<VecStringOrStringOrBool> {
+    const BUILD_RS: &str = "build.rs";
+    match build {
+        None => {
+            // If there is a `build.rs` file next to the `Cargo.toml`, assume it is
+            // a build script.
+            // the feature is unstable ,to against clash with build ,so it should set 'None'
+            // ```
+            // let build_rs = package_root.join(BUILD_RS);
+            // if build_rs.is_file() {
+            //     Some(VecStringOrBool::VecString(vec![BUILD_RS.to_owned()]))
+            // } else {
+            //     Some(VecStringOrBool::Bool(false))
+            // }
+            // ```
+            None
+        }
+        // Explicitly no build script.
+        Some(VecStringOrStringOrBool::Bool(false)) => build.cloned(),
+        Some(VecStringOrStringOrBool::VecString(build_file)) => {
+            let ret = build_file.into_iter().map(|build_file|->String {
+                let build_file = paths::normalize_path(Path::new(build_file));
+                build_file.into_os_string().into_string().expect(
+                    "`build_file` started as a String and `normalize_path` shouldn't have changed that",
+                )
+            }).collect();
+
+            Some(VecStringOrStringOrBool::VecString(ret))
+        }
+        Some(VecStringOrStringOrBool::String(build_file)) => {
+            let build_file = paths::normalize_path(Path::new(build_file));
+            let build = build_file.into_os_string().into_string().expect(
+                "`build_file` started as a String and `normalize_path` shouldn't have changed that",
+            );
+            Some(VecStringOrStringOrBool::VecString(vec![build]))
+        }
+        Some(VecStringOrStringOrBool::Bool(true)) => None,
+        //Some(VecStringOrStringOrBool::VecString(vec![BUILD_RS.to_owned()])),
     }
 }
 

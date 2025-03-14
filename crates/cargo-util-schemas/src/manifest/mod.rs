@@ -183,6 +183,7 @@ pub struct TomlPackage {
     pub version: Option<InheritableSemverVersion>,
     pub authors: Option<InheritableVecString>,
     pub build: Option<StringOrBool>,
+    pub multiple_build: Option<VecStringOrStringOrBool>,
     pub metabuild: Option<StringOrVec>,
     pub default_target: Option<String>,
     pub forced_target: Option<String>,
@@ -1721,6 +1722,27 @@ impl<'de> de::Deserialize<'de> for VecStringOrBool {
     }
 }
 
+#[derive(PartialEq, Clone, Debug, Serialize)]
+#[serde(untagged)]
+#[cfg_attr(feature = "unstable-schema", derive(schemars::JsonSchema))]
+pub enum VecStringOrStringOrBool {
+    VecString(Vec<String>),
+    String(String),
+    Bool(bool),
+}
+impl<'de> de::Deserialize<'de> for VecStringOrStringOrBool {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        UntaggedEnumVisitor::new()
+            .expecting("a boolean or vector of strings, or string")
+            .bool(|value| Ok(VecStringOrStringOrBool::Bool(value)))
+            .string(|s| Ok(VecStringOrStringOrBool::String(s.to_owned())))
+            .seq(|value| value.deserialize().map(VecStringOrStringOrBool::VecString))
+            .deserialize(deserializer)
+    }
+}
 #[derive(Clone)]
 pub struct PathValue(pub PathBuf);
 

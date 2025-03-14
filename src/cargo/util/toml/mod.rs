@@ -13,6 +13,7 @@ use cargo_platform::Platform;
 use cargo_util::paths;
 use cargo_util_schemas::manifest::{
     self, PackageName, PathBaseName, TomlDependency, TomlDetailedDependency, TomlManifest,
+    VecStringOrStringOrBool,
 };
 use cargo_util_schemas::manifest::{RustVersion, StringOrBool};
 use itertools::Itertools;
@@ -638,6 +639,12 @@ fn normalize_package_toml<'a>(
     } else {
         targets::normalize_build(original_package.build.as_ref(), package_root)
     };
+    let multiple_build = if is_embedded {
+        Some(VecStringOrStringOrBool::Bool(false))
+    } else {
+        targets::normalize_multiple_build(original_package.multiple_build.as_ref(), package_root)
+    };
+
     let metabuild = original_package.metabuild.clone();
     let default_target = original_package.default_target.clone();
     let forced_target = original_package.forced_target.clone();
@@ -743,6 +750,7 @@ fn normalize_package_toml<'a>(
         version,
         authors,
         build,
+        multiple_build: multiple_build,
         metabuild,
         default_target,
         forced_target,
@@ -1333,6 +1341,9 @@ pub fn to_real_manifest(
     if normalized_package.metabuild.is_some() {
         features.require(Feature::metabuild())?;
     }
+    if normalized_package.multiple_build.is_some() {
+        features.require(Feature::multiple_build())?;
+    }
 
     if is_embedded {
         let invalid_fields = [
@@ -1750,6 +1761,7 @@ pub fn to_real_manifest(
     let im_a_teapot = normalized_package.im_a_teapot;
     let default_run = normalized_package.default_run.clone();
     let metabuild = normalized_package.metabuild.clone().map(|sov| sov.0);
+
     let manifest = Manifest::new(
         Rc::new(contents),
         Rc::new(document),

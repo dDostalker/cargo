@@ -66,6 +66,7 @@ Each new feature described below should explain how to use it.
     * [-Z allow-features](#allow-features) --- Provides a way to restrict which unstable features are used.
 * Build scripts and linking
     * [Metabuild](#metabuild) --- Provides declarative build scripts.
+    * [Multiple-build](#multiple-build) --- Provides multiple build scripts to be executed.
 * Resolver and features
     * [no-index-update](#no-index-update) --- Prevents cargo from updating the index cache.
     * [avoid-dev-deps](#avoid-dev-deps) --- Prevents the resolver from including dev-dependencies during resolution.
@@ -335,6 +336,28 @@ extra-info = "qwerty"
 
 Metabuild packages should have a public function called `metabuild` that
 performs the same actions as a regular `build.rs` script would perform.
+
+## Multiple-build
+* Tracking Issue: [rust-lang/rust#49803](https://github.com/rust-lang/rust/issues/49803)
+
+The 'Multiple-build' allows creating multiple build script in package.
+And it's the prerequisite for achieving feature 'Metabuild'.
+In the future, it will replace the original build feature.
+
+Include `cargo-features` at the top of `Cargo.toml`,
+a `multiple-build` key in the package, list the build script in `multiple-build`.
+
+Example:
+```toml
+cargo-features = ["multiple-build"]
+
+[package]
+name = "mypackage"
+version = "0.0.1"
+multiple-build = ["build_fri.rs", "build_sec.rs"]
+``` 
+
+Surely, it also perfectly supports the previous build's functions.
 
 ## public-dependency
 * Tracking Issue: [#44663](https://github.com/rust-lang/rust/issues/44663)
